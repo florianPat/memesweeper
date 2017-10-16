@@ -55,23 +55,32 @@ MineField::MineField()
 
 void MineField::OnToggleFlag(const Vei2 & mousePos)
 {
-	if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
-		return;
-	Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
+	if (!fucked)
+	{
+		if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
+			return;
+		Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
 
-	tiles[gridPos.x + gridPos.y * width].ToggleFlag();
+		tiles[gridPos.x + gridPos.y * width].ToggleFlag();
+	}
 }
 
 void MineField::OnReveal(const Vei2 & mousePos)
 {
-	if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
-		return;
-	Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
-
-	Tile& tile = tiles[gridPos.x + gridPos.y * width];
-	if (!tile.isRevealed())
+	if (!fucked)
 	{
-		tile.Reveal();
+		if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
+			return;
+		Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
+
+		Tile& tile = tiles[gridPos.x + gridPos.y * width];
+		if (!tile.isRevealed())
+		{
+			tile.Reveal();
+		}
+
+		if (tile.HasBomb())
+			fucked = true;
 	}
 }
 
@@ -81,7 +90,7 @@ void MineField::Draw(Graphics & gfx)
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			tiles[x + y * width].Draw(gfx, nNeigbourBombs[x + y * width]);
+			tiles[x + y * width].Draw(gfx, nNeigbourBombs[x + y * width], fucked);
 		}
 	}
 }
@@ -90,24 +99,61 @@ MineField::Tile::Tile(Vei2 & pos, bool hasBomb) : pos(pos), hasBomb(hasBomb)
 {
 }
 
-void MineField::Tile::Draw(Graphics & gfx, int nNeighbourBombs)
+void MineField::Tile::Draw(Graphics & gfx, int nNeighbourBombs, bool fucked)
 {
-	gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), Color(192, 192, 192));
-	if (isRevealed())
+	if (!fucked)
 	{
-		if (hasBomb)
-			SpriteCodex::DrawTileBomb(pos, gfx);
+		gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), Color(192, 192, 192));
+		if (isRevealed())
+		{
+			if (hasBomb)
+				SpriteCodex::DrawTileBomb(pos, gfx);
+			else
+				SpriteCodex::DrawTileNumber(pos, nNeighbourBombs, gfx);
+		}
+		else if (hasFlag())
+		{
+			SpriteCodex::DrawTileButton(pos, gfx);
+			SpriteCodex::DrawTileFlag(pos, gfx);
+		}
 		else
-			SpriteCodex::DrawTileNumber(pos,nNeighbourBombs, gfx);
-	}
-	else if (hasFlag())
-	{
-		SpriteCodex::DrawTileButton(pos, gfx);
-		SpriteCodex::DrawTileFlag(pos, gfx);
+		{
+			SpriteCodex::DrawTileButton(pos, gfx);
+		}
 	}
 	else
 	{
-		SpriteCodex::DrawTileButton(pos, gfx);
+		gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), Color(192, 192, 192));
+		if (isRevealed())
+		{
+			if (hasBomb)
+				SpriteCodex::DrawTileBombRed(pos, gfx);
+			else
+				SpriteCodex::DrawTileNumber(pos, nNeighbourBombs, gfx);
+		}
+		else if (hasFlag())
+		{
+			if (hasBomb)
+			{
+				SpriteCodex::DrawTileButton(pos, gfx);
+				SpriteCodex::DrawTileFlag(pos, gfx);
+			}
+			else
+			{
+				SpriteCodex::DrawTileButton(pos, gfx);
+				SpriteCodex::DrawTileFlag(pos, gfx);
+				SpriteCodex::DrawTileCross(pos, gfx);
+			}
+		}
+		else
+		{
+			if (hasBomb)
+			{
+				SpriteCodex::DrawTileBomb(pos, gfx);
+			}
+			else
+				SpriteCodex::DrawTileButton(pos, gfx);
+		}
 	}
 }
 

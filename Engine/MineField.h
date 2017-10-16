@@ -22,7 +22,7 @@ class MineField
 	public:
 		Tile() = default;
 		Tile(Vei2& pos, bool hasBomb);
-		void Draw(Graphics& gfx, int nNeigbourBombs);
+		void Draw(Graphics& gfx, int nNeigbourBombs, bool fucked);
 		bool isRevealed() const;
 		bool hasFlag() const;
 		void Reveal();
@@ -33,6 +33,7 @@ class MineField
 	static constexpr int width = 20, height = 18, nBombs = 10;
 	Tile tiles[width * height];
 	int nNeigbourBombs[width * height];
+	bool fucked = false;
 public:
 	MineField();
 	void OnToggleFlag(const Vei2& mousePos);
