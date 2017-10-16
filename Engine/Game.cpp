@@ -51,9 +51,12 @@ void Game::UpdateModel()
 			mineField.OnToggleFlag(e.GetPos());
 		}
 	}
+
+	win = mineField.CheckWin();
 }
 
 void Game::ComposeFrame()
 {
-	mineField.Draw(gfx);
+	if(!win)
+		mineField.Draw(gfx);
 }

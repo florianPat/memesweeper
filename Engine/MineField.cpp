@@ -17,7 +17,7 @@ MineField::MineField()
 	std::uniform_int_distribution<int> yDist(0, height - 1);
 
 	int x = 0, y = 0;
-	for (int i = 0; i < nBombs; ++i)
+	for (int i = 0, j = 0; i < nBombs; ++i)
 	{
 		do
 		{
@@ -25,6 +25,7 @@ MineField::MineField()
 			y = yDist(rng);
 		} while (tiles[x + y * width].HasBomb());
 		tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize + paddingX, y * SpriteCodex::tileSize + paddingY), true);
+		tileBombs[j++] = x + y * width;
 	}
 
 	for (int y = 0; y < height; ++y)
@@ -55,7 +56,7 @@ MineField::MineField()
 
 void MineField::OnToggleFlag(const Vei2 & mousePos)
 {
-	if (!fucked)
+	if (!fucked && !win)
 	{
 		if (mousePos.x - paddingX > width * SpriteCodex::tileSize || mousePos.y - paddingY > height * SpriteCodex::tileSize
 			|| mousePos.x - paddingX < 0 || mousePos.y - paddingY < 0)
@@ -68,7 +69,7 @@ void MineField::OnToggleFlag(const Vei2 & mousePos)
 
 void MineField::OnReveal(const Vei2 & mousePos)
 {
-	if (!fucked)
+	if (!fucked && !win)
 	{
 		if (mousePos.x - paddingX > width * SpriteCodex::tileSize || mousePos.y - paddingY > height * SpriteCodex::tileSize
 			|| mousePos.x - paddingX < 0 || mousePos.y - paddingY < 0)
@@ -103,6 +104,28 @@ void MineField::Draw(Graphics & gfx)
 	}
 }
 
+bool MineField::CheckWin()
+{
+	if (!win)
+	{
+		bool result = false;
+		for (int i = 0; i < nBombs; ++i)
+		{
+			if (tiles[tileBombs[i]].hasFlag())
+				result = true;
+			else
+			{
+				result = false;
+				break;
+			}
+		}
+
+		win = result;
+	}
+
+	return win;
+}
+
 MineField::Tile::Tile(Vei2 & pos, bool hasBomb) : pos(pos), hasBomb(hasBomb)
 {
 }
@@ -111,7 +134,7 @@ void MineField::Tile::Draw(Graphics & gfx, int nNeighbourBombs, bool fucked)
 {
 	if (!fucked)
 	{
-		gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), Color(192, 192, 192));
+		gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), SpriteCodex::baseColor);
 		if (isRevealed())
 		{
 			if (hasBomb)
