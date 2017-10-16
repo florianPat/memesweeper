@@ -1,4 +1,5 @@
 #include "MineField.h"
+#include <minmax.h>
 
 MineField::MineField()
 {
@@ -24,6 +25,31 @@ MineField::MineField()
 			y = yDist(rng);
 		} while (tiles[x + y * width].HasBomb());
 		tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize, y * SpriteCodex::tileSize), true);
+	}
+
+	for (int y = 0; y < height; ++y)
+	{
+		for (int x = 0; x < width; ++x)
+		{
+			int nBombs = 0;
+
+			int xStart = max(0, x - 1);
+			int yStart = max(0, y - 1);
+
+			int xEnd = min(width - 1, x + 1);
+			int yEnd = min(height - 1, y + 1);
+
+			for (int y = yStart; y <= yEnd; ++y)
+			{
+				for (int x = xStart; x <= xEnd; ++x)
+				{
+					if (tiles[x + y * width].HasBomb())
+						++nBombs;
+				}
+			}
+
+			nNeigbourBombs[x + y * width] = nBombs;
+		}
 	}
 }
 
@@ -55,7 +81,7 @@ void MineField::Draw(Graphics & gfx)
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			tiles[x + y * width].Draw(gfx);
+			tiles[x + y * width].Draw(gfx, nNeigbourBombs[x + y * width]);
 		}
 	}
 }
@@ -64,15 +90,15 @@ MineField::Tile::Tile(Vei2 & pos, bool hasBomb) : pos(pos), hasBomb(hasBomb)
 {
 }
 
-void MineField::Tile::Draw(Graphics & gfx)
+void MineField::Tile::Draw(Graphics & gfx, int nNeighbourBombs)
 {
 	gfx.DrawRect(RectI(pos, SpriteCodex::tileSize, SpriteCodex::tileSize), Color(192, 192, 192));
 	if (isRevealed())
 	{
-		//Replace this with DrawTile0 etc..
-		SpriteCodex::DrawTile0(pos, gfx);
 		if (hasBomb)
 			SpriteCodex::DrawTileBomb(pos, gfx);
+		else
+			SpriteCodex::DrawTileNumber(pos,nNeighbourBombs, gfx);
 	}
 	else if (hasFlag())
 	{
@@ -115,4 +141,9 @@ void MineField::Tile::ToggleFlag()
 bool MineField::Tile::HasBomb() const
 {
 	return hasBomb;
+}
+
+Vei2 & MineField::Tile::GetPos() const
+{
+	return (Vei2&)pos;
 }

@@ -22,15 +22,17 @@ class MineField
 	public:
 		Tile() = default;
 		Tile(Vei2& pos, bool hasBomb);
-		void Draw(Graphics& gfx);
+		void Draw(Graphics& gfx, int nNeigbourBombs);
 		bool isRevealed() const;
 		bool hasFlag() const;
 		void Reveal();
 		void ToggleFlag();
 		bool HasBomb() const;
+		Vei2& GetPos() const;
 	};
 	static constexpr int width = 20, height = 18, nBombs = 10;
 	Tile tiles[width * height];
+	int nNeigbourBombs[width * height];
 public:
 	MineField();
 	void OnToggleFlag(const Vei2& mousePos);
