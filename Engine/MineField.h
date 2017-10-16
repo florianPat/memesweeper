@@ -27,8 +27,9 @@ class MineField
 		bool hasFlag() const;
 		void Reveal();
 		void ToggleFlag();
+		bool HasBomb() const;
 	};
-	static constexpr int width = 20, height = 18;
+	static constexpr int width = 20, height = 18, nBombs = 10;
 	Tile tiles[width * height];
 public:
 	MineField();

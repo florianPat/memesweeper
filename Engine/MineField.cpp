@@ -9,6 +9,22 @@ MineField::MineField()
 			tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize, y * SpriteCodex::tileSize), false);
 		}
 	}
+
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> xDist(0, width - 1);
+	std::uniform_int_distribution<int> yDist(0, height - 1);
+
+	int x = 0, y = 0;
+	for (int i = 0; i < nBombs; ++i)
+	{
+		do
+		{
+			x = xDist(rng);
+			y = yDist(rng);
+		} while (tiles[x + y * width].HasBomb());
+		tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize, y * SpriteCodex::tileSize), true);
+	}
 }
 
 void MineField::OnToggleFlag(const Vei2 & mousePos)
@@ -94,4 +110,9 @@ void MineField::Tile::ToggleFlag()
 		else
 			state = State::Flagged;
 	}
+}
+
+bool MineField::Tile::HasBomb() const
+{
+	return hasBomb;
 }
