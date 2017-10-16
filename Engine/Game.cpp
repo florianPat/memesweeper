@@ -24,7 +24,8 @@
 Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
-	gfx( wnd )
+	gfx( wnd ),
+	mineField()
 {
 }
 
@@ -38,8 +39,21 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+	while (!wnd.mouse.IsEmpty())
+	{
+		auto e = wnd.mouse.Read();
+		if (e.GetType() == Mouse::Event::Type::LPress)
+		{
+			mineField.OnReveal(e.GetPos());
+		}
+		else if(e.GetType() == Mouse::Event::Type::RPress)
+		{
+			mineField.OnToggleFlag(e.GetPos());
+		}
+	}
 }
 
 void Game::ComposeFrame()
 {
+	mineField.Draw(gfx);
 }
