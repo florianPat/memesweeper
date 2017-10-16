@@ -30,7 +30,8 @@ class MineField
 		bool HasBomb() const;
 		Vei2& GetPos() const;
 	};
-	static constexpr int width = 20, height = 18, nBombs = 10;
+	static constexpr int width = 20, height = 18, nBombs = 10,
+		paddingX = (Graphics::ScreenWidth / 2) - ((width / 2) * SpriteCodex::tileSize), paddingY = (Graphics::ScreenHeight  / 2) - ((height / 2) * SpriteCodex::tileSize);
 	Tile tiles[width * height];
 	int nNeigbourBombs[width * height];
 	bool fucked = false;

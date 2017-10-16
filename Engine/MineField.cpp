@@ -7,7 +7,7 @@ MineField::MineField()
 	{
 		for (int x = 0; x < width; ++x)
 		{
-			tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize, y * SpriteCodex::tileSize), false);
+			tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize + paddingX, y * SpriteCodex::tileSize + paddingY), false);
 		}
 	}
 
@@ -24,7 +24,7 @@ MineField::MineField()
 			x = xDist(rng);
 			y = yDist(rng);
 		} while (tiles[x + y * width].HasBomb());
-		tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize, y * SpriteCodex::tileSize), true);
+		tiles[x + y * width] = Tile(Vei2(x * SpriteCodex::tileSize + paddingX, y * SpriteCodex::tileSize + paddingY), true);
 	}
 
 	for (int y = 0; y < height; ++y)
@@ -57,9 +57,10 @@ void MineField::OnToggleFlag(const Vei2 & mousePos)
 {
 	if (!fucked)
 	{
-		if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
+		if (mousePos.x - paddingX > width * SpriteCodex::tileSize || mousePos.y - paddingY > height * SpriteCodex::tileSize
+			|| mousePos.x - paddingX < 0 || mousePos.y - paddingY < 0)
 			return;
-		Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
+		Vei2 gridPos((mousePos.x - paddingX) / SpriteCodex::tileSize, (mousePos.y - paddingY) / SpriteCodex::tileSize);
 
 		tiles[gridPos.x + gridPos.y * width].ToggleFlag();
 	}
@@ -69,9 +70,10 @@ void MineField::OnReveal(const Vei2 & mousePos)
 {
 	if (!fucked)
 	{
-		if (mousePos.x > width * SpriteCodex::tileSize || mousePos.y > height * SpriteCodex::tileSize)
+		if (mousePos.x - paddingX > width * SpriteCodex::tileSize || mousePos.y - paddingY > height * SpriteCodex::tileSize
+			|| mousePos.x - paddingX < 0 || mousePos.y - paddingY < 0)
 			return;
-		Vei2 gridPos(mousePos.x / SpriteCodex::tileSize, mousePos.y / SpriteCodex::tileSize);
+		Vei2 gridPos((mousePos.x - paddingX) / SpriteCodex::tileSize, (mousePos.y - paddingY) / SpriteCodex::tileSize);
 
 		Tile& tile = tiles[gridPos.x + gridPos.y * width];
 		if (!tile.isRevealed())
@@ -86,6 +88,12 @@ void MineField::OnReveal(const Vei2 & mousePos)
 
 void MineField::Draw(Graphics & gfx)
 {
+	int x0 = max(0, paddingX - SpriteCodex::tileSize),
+		y0 = max(0, paddingY - SpriteCodex::tileSize),
+		x1 = min(gfx.ScreenWidth - 1, paddingX + width * SpriteCodex::tileSize + SpriteCodex::tileSize),
+		y1 = min(gfx.ScreenHeight - 1, paddingY + height * SpriteCodex::tileSize + SpriteCodex::tileSize);
+	gfx.DrawRect(x0, y0, x1, y1, Colors::Green);
+
 	for (int y = 0; y < height; ++y)
 	{
 		for (int x = 0; x < width; ++x)
