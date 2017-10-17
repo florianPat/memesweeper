@@ -1,6 +1,58 @@
 #include "MineField.h"
 #include <minmax.h>
 
+void MineField::RevealTile(Vei2 & gridPos)
+{
+	Tile& tile = tiles[gridPos.x + gridPos.y * width];
+	if (!tile.isRevealed())
+	{
+		tile.Reveal();
+
+		if (tile.HasBomb())
+		{
+			fucked = true;
+			return;
+		}
+
+		if (hasNoNeighborBombs(gridPos))
+		{
+			int xStart = max(0, gridPos.x - 1);
+			int yStart = max(0, gridPos.y - 1);
+
+			int xEnd = min(width - 1, gridPos.x + 1);
+			int yEnd = min(height - 1, gridPos.y + 1);
+
+			for (int y = yStart; y <= yEnd; ++y)
+			{
+				for (int x = xStart; x <= xEnd; ++x)
+				{
+					RevealTile(Vei2{ x, y });
+				}
+			}
+		}
+	}
+}
+
+bool MineField::hasNoNeighborBombs(Vei2 & gridPos) const
+{
+	int xStart = max(0, gridPos.x - 1);
+	int yStart = max(0, gridPos.y - 1);
+
+	int xEnd = min(width - 1, gridPos.x + 1);
+	int yEnd = min(height - 1, gridPos.y + 1);
+
+	for (int y = yStart; y <= yEnd; ++y)
+	{
+		for (int x = xStart; x <= xEnd; ++x)
+		{
+			if (tiles[x + y * width].HasBomb())
+				return false;
+		}
+	}
+
+	return true;
+}
+
 MineField::MineField()
 {
 	for (int y = 0; y < height; ++y)
@@ -76,14 +128,7 @@ void MineField::OnReveal(const Vei2 & mousePos)
 			return;
 		Vei2 gridPos((mousePos.x - paddingX) / SpriteCodex::tileSize, (mousePos.y - paddingY) / SpriteCodex::tileSize);
 
-		Tile& tile = tiles[gridPos.x + gridPos.y * width];
-		if (!tile.isRevealed())
-		{
-			tile.Reveal();
-		}
-
-		if (tile.HasBomb())
-			fucked = true;
+		RevealTile(gridPos);
 	}
 }
 

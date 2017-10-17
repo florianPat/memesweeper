@@ -37,6 +37,9 @@ class MineField
 	bool fucked = false;
 	bool win = false;
 	int tileBombs[nBombs];
+private:
+	void RevealTile(Vei2& gridPos);
+	bool hasNoNeighborBombs(Vei2& gridPos) const;
 public:
 	MineField();
 	void OnToggleFlag(const Vei2& mousePos);
